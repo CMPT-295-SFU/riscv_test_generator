@@ -18,13 +18,21 @@ def reverse_dict_with_iterable(dictionary):
 
 
 # Instructions classified into types
+# TYPES_TO_INSTRUCTION = dict(U_TYPE={'LUI', 'AUIPC'}, UJ_TYPE={'JAL'},
+#                             SB_TYPE={'BEQ', 'BNE', 'BLT', 'BGE', 'BLTU', 'BGEU'},
+#                             I_TYPE={'JALR', 'LB', 'LH', 'LW', 'LBU', 'LHU', 'ADDI', 'SLTI', 'SLTIU', 'XORI', 'ORI',
+#                                     'ANDI', 'SLLI', 'SRLI',
+#                                     'SRAI'}, S_TYPE={'SB', 'SH', 'SW'},
+#                             R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'SLTU', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH',
+#                                     'MULHSU', 'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'})
 TYPES_TO_INSTRUCTION = dict(U_TYPE={'LUI', 'AUIPC'}, UJ_TYPE={'JAL'},
-                            SB_TYPE={'BEQ', 'BNE', 'BLT', 'BGE', 'BLTU', 'BGEU'},
-                            I_TYPE={'JALR', 'LB', 'LH', 'LW', 'LBU', 'LHU', 'ADDI', 'SLTI', 'SLTIU', 'XORI', 'ORI',
+                            SB_TYPE={'BEQ', 'BNE'},
+                            I_TYPE={'JALR', 'LB', 'LH', 'LW','ADDI', 'SLTI','XORI', 'ORI',
                                     'ANDI', 'SLLI', 'SRLI',
                                     'SRAI'}, S_TYPE={'SB', 'SH', 'SW'},
-                            R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'SLTU', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH',
-                                    'MULHSU', 'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'})
+                            R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH', 'DIV', 'REM'})
+
+
 # Opcodes of all instructions
 OPCODES = dict(LUI='0110111', AUIPC='0010111', JAL='1101111', JALR='1100111', BEQ='1100011', BNE='1100011',
                BLT='1100011', BGE='1100011', BLTU='1100011', BGEU='1100011', LB='0000011', LH='0000011', LW='0000011',
@@ -242,6 +250,7 @@ for test_case in range(int(TEST_CASES_NUMBER)):
     # Initializing all variables
     REGISTERS_NUMBER = 0
     Instructions_Number = 0
+    Instructions_Type = ""
     INSTRUCTION_CURRENT = 0
     STORED_MEMORY_LOCATIONS = []
     Instructions_list_binary = []
@@ -255,6 +264,8 @@ for test_case in range(int(TEST_CASES_NUMBER)):
     while int(REGISTERS_NUMBER) < 1 or int(REGISTERS_NUMBER) > 32:
         REGISTERS_NUMBER = input('Enter Number of Registers to use(1 to 32) : ')
 
+    while Instructions_Type not in TYPES_TO_INSTRUCTION.keys():
+        Instructions_Type = raw_input('Enter instruction type ' + str(TYPES_TO_INSTRUCTION.keys()) + ':')
     # Random Registers to use
     REGISTERS_TO_USE = np.random.randint(1, 32, int(REGISTERS_NUMBER))
     Instructions_Number = int(Instructions_Number)
@@ -262,8 +273,8 @@ for test_case in range(int(TEST_CASES_NUMBER)):
     # Generating instructions
     for instruction in range(Instructions_Number):
         INSTRUCTION_CURRENT = instruction
-        instruction_name = random.choice(list(INSTRUCTION_TO_TYPE.keys()))
-
+#        instruction_name = random.choice(list(INSTRUCTION_TO_TYPE.keys()))
+        instruction_name = random.choice(list(TYPES_TO_INSTRUCTION["R_TYPE"]))
         # Check for load instruction with no prior store
         while instruction_name in LOAD_INSTRUCTION_NAMES and len(STORED_MEMORY_LOCATIONS) == 0:
             instruction_name = random.choice(list(INSTRUCTION_TO_TYPE.keys()))
