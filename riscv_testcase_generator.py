@@ -27,10 +27,10 @@ def reverse_dict_with_iterable(dictionary):
 #                                     'MULHSU', 'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'})
 TYPES_TO_INSTRUCTION = dict(U_TYPE={'LUI', 'AUIPC'}, UJ_TYPE={'JAL'},
                             SB_TYPE={'BEQ', 'BNE'},
-                            I_TYPE={'JALR', 'LB', 'LH', 'LW','ADDI', 'SLTI','XORI', 'ORI',
+                            I_TYPE={'JALR', 'LB', 'LH', 'LW', 'ADDI', 'SLTI', 'XORI', 'ORI',
                                     'ANDI', 'SLLI', 'SRLI',
                                     'SRAI'}, S_TYPE={'SB', 'SH', 'SW'},
-                            R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH', 'DIV', 'REM'})
+                            R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH'})  # 'DIV', 'REM'})
 
 
 # Opcodes of all instructions
@@ -55,7 +55,8 @@ STORE_INSTRUCTION_NAMES = {'SB', 'SH', 'SW'}
 
 SHIFT_IMMEDIATE_INSTRUCTION_NAMES = {'SLLI', 'SRLI', 'SRAI'}
 
-M_EXTENSION_NAMES = {'MUL', 'MULH', 'MULHSU', 'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'}
+M_EXTENSION_NAMES = {'MUL', 'MULH', 'MULHSU',
+                     'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'}
 
 # Reversing the instructions table to correlate each instruction with its type directly
 INSTRUCTION_TO_TYPE = reverse_dict_with_iterable(TYPES_TO_INSTRUCTION)
@@ -97,11 +98,13 @@ def generate_r(name):
     rd_decimal = random.choice(REGISTERS_TO_USE)
     rd_binary = "{0:05b}".format(rd_decimal)
 
-    instruction_binary = func7_instruction + rs2_binary + rs1_binary + func_instruction + rd_binary + opcode_instruction
+    instruction_binary = func7_instruction + rs2_binary + \
+        rs1_binary + func_instruction + rd_binary + opcode_instruction
     instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", x" + str(rs1_decimal) + ", x" + str(
         rs2_decimal)
 
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Function to generate an I-Type instruction
@@ -123,25 +126,30 @@ def generate_i(name):
 
         shamt_decimal = np.random.randint(0, 32)
         shamt_binary = "{0:05b}".format(shamt_decimal)
-        instruction_binary = imm + shamt_binary + rs1_binary + func_instruction + rd_binary + opcode_instruction
+        instruction_binary = imm + shamt_binary + rs1_binary + \
+            func_instruction + rd_binary + opcode_instruction
         instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", x" + str(rs1_decimal) + ", " + str(
             shamt_decimal)
     elif name in LOAD_INSTRUCTION_NAMES:
         rs1_decimal = 0
         rs1_binary = "{0:05b}".format(rs1_decimal)
-        imm_decimal = random.choice(STORED_MEMORY_LOCATIONS)  # Choose from stored in locations
+        # Choose from stored in locations
+        imm_decimal = random.choice(STORED_MEMORY_LOCATIONS)
         imm_binary = "{0:012b}".format(imm_decimal)
-        instruction_binary = imm_binary + rs1_binary + func_instruction + rd_binary + opcode_instruction
+        instruction_binary = imm_binary + rs1_binary + \
+            func_instruction + rd_binary + opcode_instruction
         instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", " + str(imm_decimal) + "(x" \
             + str(rs1_decimal) + ")"
     else:
         imm_decimal = np.random.randint(0, 4095)
         imm_binary = "{0:012b}".format(imm_decimal)
-        instruction_binary = imm_binary + rs1_binary + func_instruction + rd_binary + opcode_instruction
+        instruction_binary = imm_binary + rs1_binary + \
+            func_instruction + rd_binary + opcode_instruction
         instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", x" + str(rs1_decimal) + ", " + str(
             imm_decimal)
 
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Function to generate an S-Type instruction
@@ -153,17 +161,19 @@ def generate_s(name):
     rs1_binary = "{0:05b}".format(rs1_decimal)
     rs2_decimal = random.choice(REGISTERS_TO_USE)
     rs2_binary = "{0:05b}".format(rs2_decimal)
-    imm_decimal = 2 * np.random.randint(0, 2047)
+    # Should not generate -ve addresses
+    imm_decimal = np.random.randint(0, 2047)
     imm_binary = "{0:012b}".format(imm_decimal)
 
     # Add address to locations to load from list
     STORED_MEMORY_LOCATIONS.append(imm_decimal)
 
     instruction_binary = imm_binary[0:7] + rs2_binary + rs1_binary + func_instruction + imm_binary[
-                                                                                         7:] + opcode_instruction
+        7:] + opcode_instruction
     instruction_assembly = format(name, '10s') + "\tx" + str(rs2_decimal) + ", " + str(imm_decimal) + "(x" \
         + str(rs1_decimal) + ")"
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Function to generate an SB-Type instruction
@@ -179,7 +189,7 @@ def generate_sb(name):
     imm_decimal = INSTRUCTION_CURRENT * 4
 
     # If immediate address is current one, regenerate another.
-    while imm_decimal == INSTRUCTION_CURRENT * 4:
+    while imm_decimal == INSTRUCTION_CURRENT * 4 & (imm_decimal < 0):
         imm_decimal = 2 * np.random.randint(0, Instructions_Number * 2)
 
     imm_binary = "{0:012b}".format(imm_decimal)
@@ -188,7 +198,8 @@ def generate_sb(name):
     instruction_assembly = format(name, '10s') + "\tx" + str(rs1_decimal) + ", x" + str(rs2_decimal) + ", " + str(
         imm_decimal)
 
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Function to generate a U-Type instruction
@@ -201,9 +212,11 @@ def generate_u(name):
     imm_binary = "{0:020b}".format(imm_decimal)
 
     instruction_binary = imm_binary + rd_binary + opcode_instruction
-    instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", " + str(imm_decimal)
+    instruction_assembly = format(
+        name, '10s') + "\tx" + str(rd_decimal) + ", " + str(imm_decimal)
 
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Function to generate an UJ-Type instruction
@@ -220,10 +233,13 @@ def generate_uj(name):
 
     imm_binary = "{0:020b}".format(imm_decimal)
 
-    instruction_binary = imm_binary[0] + imm_binary[10:] + imm_binary[9] + imm_binary[1:9] + rd_binary + opcode_instruction
-    instruction_assembly = format(name, '10s') + "\tx" + str(rd_decimal) + ", " + str(imm_decimal)
+    instruction_binary = imm_binary[0] + imm_binary[10:] + \
+        imm_binary[9] + imm_binary[1:9] + rd_binary + opcode_instruction
+    instruction_assembly = format(
+        name, '10s') + "\tx" + str(rd_decimal) + ", " + str(imm_decimal)
 
-    add_instructions(instruction_binary, instruction_assembly, convert_to_hex(instruction_binary))
+    add_instructions(instruction_binary, instruction_assembly,
+                     convert_to_hex(instruction_binary))
 
 
 # Instruction generation wrapper
@@ -259,13 +275,16 @@ for test_case in range(int(TEST_CASES_NUMBER)):
 
     # Recieving and validaing inputs
     while int(Instructions_Number) < 1:
-        Instructions_Number = input('Enter Number of Instructions to produce: ')
+        Instructions_Number = input(
+            'Enter Number of Instructions to produce: ')
 
     while int(REGISTERS_NUMBER) < 1 or int(REGISTERS_NUMBER) > 32:
-        REGISTERS_NUMBER = input('Enter Number of Registers to use(1 to 32) : ')
+        REGISTERS_NUMBER = input(
+            'Enter Number of Registers to use(1 to 32) : ')
 
     while Instructions_Type not in TYPES_TO_INSTRUCTION.keys():
-        Instructions_Type = raw_input('Enter instruction type ' + str(TYPES_TO_INSTRUCTION.keys()) + ':')
+        Instructions_Type = raw_input(
+            'Enter instruction type ' + str(TYPES_TO_INSTRUCTION.keys()) + ':')
     # Random Registers to use
     REGISTERS_TO_USE = np.random.randint(1, 32, int(REGISTERS_NUMBER))
     Instructions_Number = int(Instructions_Number)
@@ -274,7 +293,8 @@ for test_case in range(int(TEST_CASES_NUMBER)):
     for instruction in range(Instructions_Number):
         INSTRUCTION_CURRENT = instruction
 #        instruction_name = random.choice(list(INSTRUCTION_TO_TYPE.keys()))
-        instruction_name = random.choice(list(TYPES_TO_INSTRUCTION["R_TYPE"]))
+        instruction_name = random.choice(
+            list(TYPES_TO_INSTRUCTION[Instructions_Type]))
         # Check for load instruction with no prior store
         while instruction_name in LOAD_INSTRUCTION_NAMES and len(STORED_MEMORY_LOCATIONS) == 0:
             instruction_name = random.choice(list(INSTRUCTION_TO_TYPE.keys()))
@@ -286,7 +306,8 @@ for test_case in range(int(TEST_CASES_NUMBER)):
     assembly_file = open("assembly" + str(test_case + 1) + ".s", "w")
     hex_file = open("hex" + str(test_case + 1) + ".v", "w")
 
-    assembly_file.write('test' + str(test_case + 1) + '.elf:     file format elf32-littleriscv\n\n\n')
+    assembly_file.write('test' + str(test_case + 1) +
+                        '.elf:     file format elf32-littleriscv\n\n\n')
     assembly_file.write('Disassembly of section .text:\n\n00000000 <main>:\n')
     hex_file.write("@00000000\n")
 
@@ -297,7 +318,8 @@ for test_case in range(int(TEST_CASES_NUMBER)):
         split_hex = re.findall('..', instructions_list_hex[i])
         if i % 4 == 0 and i != 0:
             hex_file.write("\n")
-        hex_file.write(split_hex[3] + ' ' + split_hex[2] + ' ' + split_hex[1] + ' ' + split_hex[0] + ' ')
+        hex_file.write(split_hex[3] + ' ' + split_hex[2] +
+                       ' ' + split_hex[1] + ' ' + split_hex[0] + ' ')
 
     binary_file.close()
     assembly_file.close()
