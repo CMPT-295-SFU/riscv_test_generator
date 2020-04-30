@@ -25,7 +25,7 @@ def reverse_dict_with_iterable(dictionary):
 #                                     'SRAI'}, S_TYPE={'SB', 'SH', 'SW'},
 #                             R_TYPE={'ADD', 'SUB', 'SLL', 'SLT', 'SLTU', 'XOR', 'SRL', 'SRA', 'OR', 'AND', 'MUL', 'MULH',
 #                                     'MULHSU', 'MULHU', 'DIV', 'DIVU', 'REM', 'REMU'})
-TYPES_TO_INSTRUCTION = dict(U_TYPE={'LUI', 'AUIPC'}, UJ_TYPE={'JAL'},
+TYPES_TO_INSTRUCTION = dict(U_TYPE={'LUI'}, UJ_TYPE={'JAL'},
                             SB_TYPE={'BEQ', 'BNE'},
                             I_TYPE={'JALR', 'LB', 'LH', 'LW', 'ADDI', 'SLTI', 'XORI', 'ORI',
                                     'ANDI', 'SLLI', 'SRLI',
